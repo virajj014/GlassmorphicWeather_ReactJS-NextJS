@@ -1,95 +1,122 @@
+"use client";
 import Image from "next/image";
 import styles from "./page.module.css";
+import { useEffect, useState } from "react";
+import SearchIcon from '@mui/icons-material/Search';
+import FilterDramaIcon from '@mui/icons-material/FilterDrama';
+import DehazeIcon from '@mui/icons-material/Dehaze';
+import VapingRoomsIcon from '@mui/icons-material/VapingRooms';
+import WbSunnyIcon from '@mui/icons-material/WbSunny';
+let WEATHER_API_KEY = process.env.NEXT_PUBLIC_WEATHER_API_KEY
 
 export default function Home() {
+  const [place, setPlace] = useState("Jabalpur")
+  const [placeData, setPlaceData] = useState<any>(null)
+  const currentTime = new Date().toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+  const getWeatherData = async () => {
+    //https://api.openweathermap.org/data/2.5/weather?q=delhi&appid=WEATHER_API_KEY
+
+    if (place && place.length > 0) {
+      try {
+        let url = `https://api.openweathermap.org/data/2.5/weather?q=${place}&appid=${WEATHER_API_KEY}`
+        let res = await fetch(url);
+        let data = await res.json();
+        console.log("GET WEATHER DATA RESPONSE ", data)
+        setPlaceData(data)
+      }
+      catch (err) {
+        console.log(err)
+      }
+    }
+  }
+
+  useEffect(() => {
+    getWeatherData();
+  }, [])
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <div className={styles.outerdiv}>
+      <div className={styles.searchbar}>
+        <input type="search" placeholder="City Name" onChange={(e) => setPlace(e.target.value)} />
+        <button onClick={getWeatherData}><SearchIcon /></button>
+      </div>
+
+      {
+        placeData && <div className={styles.row}>
+          <div className={styles.section1}>
+            <div className={styles.section11}>
+              {
+                placeData.weather[0].main === 'Clouds' &&
+                <FilterDramaIcon className={styles.weathericon} />
+              }
+              {
+                placeData.weather[0].main === 'Haze' &&
+                <DehazeIcon className={styles.weathericon} />
+              }
+              {
+                placeData.weather[0].main === 'Smoke' &&
+                <VapingRoomsIcon className={styles.weathericon} />
+              }
+              {
+                placeData.weather[0].main === 'Clear' &&
+                <WbSunnyIcon className={styles.weathericon} />
+              }
+
+              <p className={styles.temp}>{(placeData?.main.temp - 273.15).toFixed(1)} <span>°C</span></p>
+            </div>
+            <div className={styles.section11}>
+              <p className={styles.city}>{placeData?.name}</p>
+              <p className={styles.weathertype}>{placeData?.weather[0].main}</p>
+            </div>
+          </div>
+
+          <div className={styles.timediv}>
+            <p className={styles.time}>{currentTime}</p>
+          </div>
         </div>
-      </div>
+      }
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
+      {
+        placeData &&
+        <div className={styles.section2}>
+          <div className={styles.section21}>
+            <p className={styles.head1}>Temperature</p>
+            <p className={styles.head2}>{(placeData?.main.temp - 273.15).toFixed(1)} °C</p>
+          </div>
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
+          <div className={styles.section21}>
+            <p className={styles.head1}>Temperature Min</p>
+            <p className={styles.head2}>{(placeData?.main.temp_min - 273.15).toFixed(1)} °C</p>
+          </div>
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
+          <div className={styles.section21}>
+            <p className={styles.head1}>Temperature Max</p>
+            <p className={styles.head2}>{(placeData?.main.temp_max - 273.15).toFixed(1)} °C</p>
+          </div>
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+          <div className={styles.section21}>
+            <p className={styles.head1}>Humidity</p>
+            <p className={styles.head2}>{placeData?.main.humidity}</p>
+          </div>
+
+          <div className={styles.section21}>
+            <p className={styles.head1}>pressure</p>
+            <p className={styles.head2}>{placeData?.main.pressure}</p>
+          </div>
+
+          <div className={styles.section21}>
+            <p className={styles.head1}>Visibility</p>
+            <p className={styles.head2}>{placeData?.visibility}</p>
+          </div>
+          <div className={styles.section21}>
+            <p className={styles.head1}>Wind Speed</p>
+            <p className={styles.head2}>{placeData?.wind.speed} km/hr</p>
+          </div>
+        </div>
+      }
+    </div>
   );
 }
